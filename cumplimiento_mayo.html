@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cumplimiento Mayo 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh; padding: 14px; }
+
+.header {
+  background: linear-gradient(135deg, #075e54, #128c7e);
+  color: white; border-radius: 16px; padding: 18px 20px;
+  margin-bottom: 12px; text-align: center;
+}
+.header h1 { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
+.header p  { font-size: 0.72rem; opacity: 0.85; }
+.formula-tag {
+  background: rgba(255,255,255,0.15); border-radius: 8px;
+  padding: 6px 10px; font-size: 0.68rem; margin-top: 10px; display: inline-block;
+}
+
+/* TABS */
+.section-tabs { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+.stab {
+  padding: 8px 16px; border-radius: 20px; border: none;
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+  white-space: nowrap; background: white; color: #555;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s;
+}
+.stab.active { background: #075e54; color: white; }
+
+.section { display: none; }
+.section.active { display: block; }
+
+/* SUMMARY PILLS */
+.summary-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.s-card { flex:1; background:white; border-radius:12px; padding:12px 8px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+.s-card .num { font-size:1.8rem; font-weight:800; line-height:1; }
+.s-card .lbl { font-size:0.62rem; color:#888; margin-top:4px; text-transform:uppercase; letter-spacing:0.04em; }
+.c-ok { color:#25d366; } .c-warn { color:#ffa500; } .c-bad { color:#e53935; }
+
+/* FILTER TABS */
+.filter-tabs { display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px; }
+.tab { padding:7px 14px; border-radius:20px; border:none; font-size:0.75rem; font-weight:600; cursor:pointer; white-space:nowrap; background:white; color:#555; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:all 0.2s; }
+.tab.active { background:#075e54; color:white; }
+
+/* CARDS */
+.cards { display:flex; flex-direction:column; gap:8px; }
+.card {
+  background:white; border-radius:14px; padding:14px 16px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.07); cursor:pointer;
+  transition:transform 0.15s; border-left:4px solid #eee;
+}
+.card.ok-card   { border-left-color:#25d366; }
+.card.warn-card { border-left-color:#ffa500; }
+.card.bad-card  { border-left-color:#e53935; }
+.card:active { transform:scale(0.99); }
+
+.card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.c-name { font-weight:700; font-size:0.88rem; color:#1a1a1a; }
+.c-zona { font-size:0.7rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:10px; }
+
+.pct-row { display:flex; gap:6px; margin-bottom:8px; }
+.pct-box { flex:1; background:#f8f9fa; border-radius:8px; padding:6px 8px; text-align:center; }
+.pct-box .val { font-size:0.88rem; font-weight:700; color:#1a1a1a; }
+.pct-box .key { font-size:0.6rem; color:#aaa; text-transform:uppercase; margin-top:1px; }
+
+.result-row { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid #f0f0f0; }
+.res-block { text-align:center; }
+.res-block .rv { font-size:0.78rem; font-weight:700; color:#444; }
+.res-block .rk { font-size:0.6rem; color:#bbb; margin-top:1px; }
+.diff-badge { padding:4px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+.diff-ok   { background:#e8faf0; color:#25d366; }
+.diff-warn { background:#fff8e6; color:#e68900; }
+.diff-bad  { background:#ffeaea; color:#e53935; }
+
+.detail-panel { display:none; background:#f8f9fa; border-radius:10px; padding:12px; margin-top:10px; font-size:0.78rem; color:#555; line-height:1.7; }
+.card.open .detail-panel { display:block; }
+.detail-panel .drow { display:flex; justify-content:space-between; }
+.detail-panel .drow span { color:#999; }
+.detail-panel .drow strong { color:#1a1a1a; }
+.verdict { margin-top:8px; padding:8px 12px; border-radius:8px; font-weight:600; text-align:center; font-size:0.76rem; }
+.verdict-ok   { background:#e8faf0; color:#1a7a4a; }
+.verdict-warn { background:#fff8e6; color:#b36b00; }
+.verdict-bad  { background:#ffeaea; color:#b71c1c; }
+
+/* RANKING */
+.rank-cards { display:flex; flex-direction:column; gap:8px; }
+.rank-card {
+  background:white; border-radius:14px; padding:14px 16px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.07);
+  display:flex; align-items:center; gap:12px;
+}
+.rank-num { font-size:1.4rem; font-weight:800; min-width:36px; text-align:center; }
+.rank-info { flex:1; }
+.rank-info .rname { font-weight:700; font-size:0.9rem; color:#1a1a1a; }
+.rank-info .rzona { font-size:0.7rem; color:#999; margin-top:2px; }
+.rank-bar-wrap { flex:1; }
+.rank-bar-bg { background:#f0f0f0; border-radius:6px; height:14px; overflow:hidden; margin-bottom:4px; }
+.rank-bar-fill { height:100%; border-radius:6px; transition:width 0.8s ease; }
+.rank-score { font-weight:800; font-size:1rem; min-width:54px; text-align:right; }
+
+/* STATS */
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.stat-card { background:white; border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.stat-card .st-title { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #f5f5f5; }
+.stat-row:last-child { border-bottom:none; }
+.stat-row .sk { font-size:0.72rem; color:#888; }
+.stat-row .sv { font-size:0.8rem; font-weight:700; }
+
+.kpi-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.kpi { flex:1; min-width:140px; background:white; border-radius:12px; padding:14px 12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.07); border-top:3px solid #075e54; }
+.kpi .kv { font-size:1.5rem; font-weight:800; color:#075e54; }
+.kpi .kl { font-size:0.65rem; color:#999; margin-top:4px; text-transform:uppercase; letter-spacing:0.04em; }
+.kpi .ks { font-size:0.72rem; color:#555; margin-top:2px; font-weight:600; }
+
+.footer { text-align:center; margin-top:16px; font-size:0.68rem; color:#bbb; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Cumplimiento Inspectores · Mayo 2026</h1>
+  <p>EMVARIAS S.A. E.S.P. — Interventoría Área Aseo</p>
+  <div class="formula-tag">60% × prom(%LV, %RyT) + 40% × %Tiempo Cargue</div>
+</div>
+
+<!-- SECTION TABS -->
+<div class="section-tabs">
+  <button class="stab active" onclick="showSection('cumpl',this)">📋 Cumplimiento</button>
+  <button class="stab" onclick="showSection('ranking',this)">🏆 Ranking</button>
+  <button class="stab" onclick="showSection('stats',this)">📈 Estadística</button>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECCIÓN 1: CUMPLIMIENTO           -->
+<!-- ══════════════════════════════════ -->
+<div id="cumpl" class="section active">
+  <div class="summary-row" id="summary-row"></div>
+  <div class="filter-tabs">
+    <button class="tab active" onclick="filter('all',this)">Todos</button>
+    <button class="tab" onclick="filter('ok',this)">✅ Alto ≥90%</button>
+    <button class="tab" onclick="filter('warn',this)">⚠️ Medio 75-90%</button>
+    <button class="tab" onclick="filter('bad',this)">❌ Bajo &lt;75%</button>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECCIÓN 2: RANKING                -->
+<!-- ══════════════════════════════════ -->
+<div id="ranking" class="section">
+  <div class="rank-cards" id="rank-cards"></div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SECCIÓN 3: ESTADÍSTICA            -->
+<!-- ══════════════════════════════════ -->
+<div id="stats" class="section">
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="stat-grid" id="stat-grid"></div>
+</div>
+
+<div class="footer">Toca cada inspector para ver el detalle · EMVARIAS Mayo 2026</div>
+
+<script>
+const raw = [
+  {name:"Brahyam Jaramillo", zona:"1",          lv:94.3,  ryt:85.5,  cargue:71.2},
+  {name:"Santiago Valencia", zona:"2",          lv:100.0, ryt:95.8,  cargue:57.4},
+  {name:"Diego Hoyos",       zona:"3",          lv:97.2,  ryt:97.5,  cargue:81.4},
+  {name:"Carlos Restrepo",   zona:"4",          lv:97.1,  ryt:100.0, cargue:100.0},
+  {name:"Manuel Restrepo",   zona:"4",          lv:97.8,  ryt:97.8,  cargue:99.7},
+  {name:"Andrey Vanegas",    zona:"5",          lv:100.0, ryt:90.2,  cargue:100.0},
+  {name:"Cesar Rua",         zona:"6",          lv:100.0, ryt:100.0, cargue:100.0},
+
+  {name:"Esteban Murillo",   zona:"7AM",        lv:100.0, ryt:97.7,  cargue:99.1},
+  {name:"John Jader Bedoya", zona:"7NOC",       lv:100.0, ryt:74.6,  cargue:56.0},
+  {name:"Daniel Parra",      zona:"7PM",        lv:100.0, ryt:80.0,  cargue:49.4},
+  {name:"Jorge Puerta",      zona:"Periferias", lv:98.6,  ryt:96.7,  cargue:49.6},
+];
+
+const data = raw.map(r => {
+  const avg  = (r.lv + r.ryt) / 2;
+  const calc = avg * 0.6 + r.cargue * 0.4;
+  const cls  = calc >= 90 ? 'ok' : calc >= 75 ? 'warn' : 'bad';
+  return {...r, avg, calc, cls};
+});
+
+const ranked = [...data].sort((a,b) => b.calc - a.calc);
+
+function clsCfg(cls) {
+  if(cls==='ok')   return {icon:'✅', col:'#25d366', bg:'#e8faf0', label:'Alto'};
+  if(cls==='warn') return {icon:'⚠️', col:'#e68900', bg:'#fff8e6', label:'Medio'};
+  return                  {icon:'❌', col:'#e53935', bg:'#ffeaea', label:'Bajo'};
+}
+
+// ── Summary pills ──
+function renderSummary() {
+  const ok=data.filter(r=>r.cls==='ok').length;
+  const warn=data.filter(r=>r.cls==='warn').length;
+  const bad=data.filter(r=>r.cls==='bad').length;
+  document.getElementById('summary-row').innerHTML=`
+    <div class="s-card"><div class="num c-ok">${ok}</div><div class="lbl">✅ Alto ≥90%</div></div>
+    <div class="s-card"><div class="num c-warn">${warn}</div><div class="lbl">⚠️ Medio 75-90%</div></div>
+    <div class="s-card"><div class="num c-bad">${bad}</div><div class="lbl">❌ Bajo &lt;75%</div></div>
+  `;
+}
+
+// ── Cumplimiento cards ──
+let currentFilter='all';
+function filter(type,btn){
+  currentFilter=type;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+function renderCards(){
+  const filtered=currentFilter==='all'?data:data.filter(r=>r.cls===currentFilter);
+  const container=document.getElementById('cards');
+  container.innerHTML=filtered.map(r=>{
+    const cfg=clsCfg(r.cls);
+    const verdict=r.cls==='ok'?`✅ Cumplimiento alto (${r.calc.toFixed(1)}%)`:
+                  r.cls==='warn'?`⚠️ Cumplimiento medio (${r.calc.toFixed(1)}%)`:
+                  `❌ Cumplimiento bajo — requiere atención`;
+    return `
+    <div class="card ${r.cls}-card" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <span class="c-name">${cfg.icon} ${r.name}</span>
+        <span class="c-zona">Zona ${r.zona}</span>
+      </div>
+      <div class="pct-row">
+        <div class="pct-box"><div class="val">${r.lv.toFixed(1)}%</div><div class="key">% LV</div></div>
+        <div class="pct-box"><div class="val">${r.ryt.toFixed(1)}%</div><div class="key">% RyT</div></div>
+        <div class="pct-box"><div class="val">${r.cargue.toFixed(1)}%</div><div class="key">% Cargue</div></div>
+      </div>
+      <div class="result-row">
+        <div class="res-block"><div class="rv">${r.avg.toFixed(1)}%</div><div class="rk">Prom LV+RyT</div></div>
+        <div class="diff-badge diff-${r.cls}" style="font-size:1rem;padding:6px 14px">${r.calc.toFixed(1)}%</div>
+        <div class="res-block"><div class="rv">${cfg.label}</div><div class="rk">Estado</div></div>
+      </div>
+      <div class="detail-panel">
+        <div class="drow"><span>Promedio LV + RyT</span><strong>${r.avg.toFixed(2)}%</strong></div>
+        <div class="drow"><span>60% × ${r.avg.toFixed(2)}%</span><strong>${(0.6*r.avg).toFixed(2)}%</strong></div>
+        <div class="drow"><span>40% × ${r.cargue.toFixed(1)}%</span><strong>${(0.4*r.cargue).toFixed(2)}%</strong></div>
+        <div class="drow"><span>Total calculado</span><strong>${r.calc.toFixed(2)}%</strong></div>
+        <div class="verdict verdict-${r.cls}">${verdict}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Ranking ──
+function renderRanking(){
+  const medals=['🥇','🥈','🥉'];
+  const mColors=['#c49400','#7d8591','#9b5f23'];
+  const barColors={ok:'#25d366',warn:'#ffa500',bad:'#e53935'};
+  document.getElementById('rank-cards').innerHTML=ranked.map((r,i)=>{
+    const col=barColors[r.cls];
+    const rowBg=i<3?['#fffad7','#f4f4fa','#fff2e1'][i]:'#fff';
+    const numDisplay=i<3?`<span style="font-size:1.3rem">${medals[i]}</span><br><span style="font-size:0.85rem;color:${mColors[i]}">${i+1}</span>`:`${i+1}`;
+    return `
+    <div class="rank-card" style="background:${rowBg};border-left:5px solid ${col}">
+      <div class="rank-num" style="color:${i<3?mColors[i]:'#aaa'}">${numDisplay}</div>
+      <div class="rank-info">
+        <div class="rname">${r.name}</div>
+        <div class="rzona">Zona ${r.zona} · LV ${r.lv.toFixed(1)}% · RyT ${r.ryt.toFixed(1)}% · Cargue ${r.cargue.toFixed(1)}%</div>
+      </div>
+      <div class="rank-bar-wrap">
+        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${r.calc}%;background:${col}"></div></div>
+      </div>
+      <div class="rank-score" style="color:${col}">${r.calc.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Stats ──
+function calcStats(vals){
+  const n=vals.length, mean=vals.reduce((a,b)=>a+b,0)/n;
+  const sorted=[...vals].sort((a,b)=>a-b);
+  const median=n%2===0?(sorted[n/2-1]+sorted[n/2])/2:sorted[Math.floor(n/2)];
+  const stdev=Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
+  return {mean,median,stdev,min:sorted[0],max:sorted[n-1],range:sorted[n-1]-sorted[0]};
+}
+
+function renderStats(){
+  const indicators=[
+    {label:'% Calculado General',key:'calc',   color:'#075e54'},
+    {label:'% LV',              key:'lv',     color:'#1e64c8'},
+    {label:'% RyT',             key:'ryt',    color:'#a0500a'},
+    {label:'% Cargue',          key:'cargue', color:'#8c1e8c'},
+  ];
+  const best=data.reduce((a,b)=>a.calc>b.calc?a:b);
+  const worst=data.reduce((a,b)=>a.calc<b.calc?a:b);
+  const mean=calcStats(data.map(r=>r.calc)).mean;
+  const above=data.filter(r=>r.calc>=mean).length;
+  const aprobados=data.filter(r=>r.calc>=85).length;
+
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi"><div class="kv">${mean.toFixed(1)}%</div><div class="kl">Media General</div><div class="ks">Mayo 2026</div></div>
+    <div class="kpi" style="border-top-color:#25d366"><div class="kv" style="color:#25d366">${best.calc.toFixed(1)}%</div><div class="kl">Mejor</div><div class="ks">${best.name}</div></div>
+    <div class="kpi" style="border-top-color:#e53935"><div class="kv" style="color:#e53935">${worst.calc.toFixed(1)}%</div><div class="kl">Menor</div><div class="ks">${worst.name}</div></div>
+    <div class="kpi" style="border-top-color:#1e64c8"><div class="kv" style="color:#1e64c8">${aprobados}/${data.length}</div><div class="kl">Aprobados ≥85%</div><div class="ks">${(aprobados/data.length*100).toFixed(0)}% del equipo</div></div>
+  `;
+
+  document.getElementById('stat-grid').innerHTML=indicators.map(ind=>{
+    const vals=data.map(r=>r[ind.key]);
+    const st=calcStats(vals);
+    const sobre=vals.filter(v=>v>=st.mean).length;
+    return `
+    <div class="stat-card">
+      <div class="st-title" style="color:${ind.color}">${ind.label}</div>
+      <div class="stat-row"><span class="sk">Media</span><span class="sv" style="color:${ind.color}">${st.mean.toFixed(1)}%</span></div>
+      <div class="stat-row"><span class="sk">Mediana</span><span class="sv">${st.median.toFixed(1)}%</span></div>
+      <div class="stat-row"><span class="sk">Desv. Est.</span><span class="sv">${st.stdev.toFixed(1)}%</span></div>
+      <div class="stat-row"><span class="sk">Mínimo</span><span class="sv">${st.min.toFixed(1)}%</span></div>
+      <div class="stat-row"><span class="sk">Máximo</span><span class="sv">${st.max.toFixed(1)}%</span></div>
+      <div class="stat-row"><span class="sk">Rango</span><span class="sv">${st.range.toFixed(1)}%</span></div>
+      <div class="stat-row"><span class="sk">Sobre media</span><span class="sv">${sobre}/${data.length}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function showSection(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Init
+renderSummary();
+renderCards();
+renderRanking();
+renderStats();
+</script>
+</body>
+</html>
