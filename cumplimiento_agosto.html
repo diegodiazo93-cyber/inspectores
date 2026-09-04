@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cumplimiento Agosto 2026</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f2f5; min-height: 100vh; padding: 14px; }
+.header { background: linear-gradient(135deg, #075e54, #128c7e); color: white; border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; text-align: center; }
+.header h1 { font-size: 1.1rem; font-weight: 800; margin-bottom: 4px; }
+.header p  { font-size: 0.72rem; opacity: 0.85; }
+.formula-tag { background: rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 10px; font-size: 0.68rem; margin-top: 10px; display: inline-block; }
+.section-tabs { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+.stab { padding: 8px 16px; border-radius: 20px; border: none; font-size: 0.75rem; font-weight: 700; cursor: pointer; white-space: nowrap; background: white; color: #555; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: all 0.2s; }
+.stab.active { background: #075e54; color: white; }
+.section { display: none; }
+.section.active { display: block; }
+.summary-row { display: flex; gap: 8px; margin-bottom: 12px; }
+.s-card { flex:1; background:white; border-radius:12px; padding:12px 8px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+.s-card .num { font-size:1.8rem; font-weight:800; line-height:1; }
+.s-card .lbl { font-size:0.6rem; color:#888; margin-top:4px; text-transform:uppercase; letter-spacing:0.03em; }
+.c-ok{color:#25d366} .c-warn{color:#ffa500} .c-bad{color:#e53935}
+.filter-tabs { display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px; }
+.tab { padding:7px 14px; border-radius:20px; border:none; font-size:0.75rem; font-weight:600; cursor:pointer; white-space:nowrap; background:white; color:#555; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:all 0.2s; }
+.tab.active { background:#075e54; color:white; }
+.cards { display:flex; flex-direction:column; gap:8px; }
+.card { background:white; border-radius:14px; padding:14px 16px; box-shadow:0 1px 4px rgba(0,0,0,0.07); cursor:pointer; transition:transform 0.15s; border-left:4px solid #eee; }
+.card.ok-card{border-left-color:#25d366} .card.warn-card{border-left-color:#ffa500} .card.bad-card{border-left-color:#e53935}
+.card:active { transform:scale(0.99); }
+.card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.c-name { font-weight:700; font-size:0.88rem; color:#1a1a1a; }
+.c-zona { font-size:0.7rem; color:#999; background:#f5f5f5; padding:2px 8px; border-radius:10px; }
+.pct-row { display:flex; gap:6px; margin-bottom:8px; }
+.pct-box { flex:1; background:#f8f9fa; border-radius:8px; padding:6px 8px; text-align:center; }
+.pct-box .val { font-size:0.88rem; font-weight:700; color:#1a1a1a; }
+.pct-box .key { font-size:0.6rem; color:#aaa; text-transform:uppercase; margin-top:1px; }
+.result-row { display:flex; justify-content:space-between; align-items:center; padding-top:8px; border-top:1px solid #f0f0f0; }
+.res-block { text-align:center; }
+.res-block .rv { font-size:0.78rem; font-weight:700; color:#444; }
+.res-block .rk { font-size:0.6rem; color:#bbb; margin-top:1px; }
+.score-badge { padding:6px 14px; border-radius:20px; font-size:1rem; font-weight:800; }
+.score-ok{background:#e8faf0;color:#25d366} .score-warn{background:#fff8e6;color:#e68900} .score-bad{background:#ffeaea;color:#e53935}
+.detail-panel { display:none; background:#f8f9fa; border-radius:10px; padding:12px; margin-top:10px; font-size:0.78rem; color:#555; line-height:1.8; }
+.card.open .detail-panel { display:block; }
+.drow { display:flex; justify-content:space-between; }
+.drow span{color:#999} .drow strong{color:#1a1a1a}
+.verdict { margin-top:8px; padding:8px 12px; border-radius:8px; font-weight:600; text-align:center; font-size:0.76rem; }
+.verdict-ok{background:#e8faf0;color:#1a7a4a} .verdict-warn{background:#fff8e6;color:#b36b00} .verdict-bad{background:#ffeaea;color:#b71c1c}
+.rank-cards { display:flex; flex-direction:column; gap:8px; }
+.rank-card { background:white; border-radius:14px; padding:14px 16px; box-shadow:0 1px 4px rgba(0,0,0,0.07); display:flex; align-items:center; gap:12px; }
+.rank-info { flex:1; }
+.rank-info .rname { font-weight:700; font-size:0.9rem; color:#1a1a1a; }
+.rank-info .rzona { font-size:0.68rem; color:#999; margin-top:2px; }
+.rank-bar-bg { background:#f0f0f0; border-radius:6px; height:12px; overflow:hidden; margin-top:6px; }
+.rank-bar-fill { height:100%; border-radius:6px; }
+.rank-score { font-weight:800; font-size:1rem; min-width:54px; text-align:right; }
+.kpi-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
+.kpi { flex:1; min-width:130px; background:white; border-radius:12px; padding:12px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.07); border-top:3px solid #075e54; }
+.kpi .kv { font-size:1.5rem; font-weight:800; color:#075e54; }
+.kpi .kl { font-size:0.6rem; color:#999; text-transform:uppercase; margin-top:3px; }
+.kpi .ks { font-size:0.72rem; color:#555; margin-top:2px; font-weight:600; }
+.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.stat-card { background:white; border-radius:12px; padding:14px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.st-title { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #f5f5f5; }
+.stat-row:last-child{border-bottom:none}
+.sk{font-size:0.72rem;color:#888} .sv{font-size:0.8rem;font-weight:700}
+.footer { text-align:center; margin-top:16px; font-size:0.68rem; color:#bbb; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Cumplimiento Inspectores · Agosto 2026</h1>
+  <p>EMVARIAS S.A. E.S.P. — Interventoría Área Aseo</p>
+  <div class="formula-tag">60% × prom(%LV, %RyT) + 40% × %Tiempo Cargue</div>
+</div>
+
+<div class="section-tabs">
+  <button class="stab active" onclick="showSection('cumpl',this)">📋 Cumplimiento</button>
+  <button class="stab" onclick="showSection('ranking',this)">🏆 Ranking</button>
+  <button class="stab" onclick="showSection('stats',this)">📈 Estadística</button>
+</div>
+
+<!-- CUMPLIMIENTO -->
+<div id="cumpl" class="section active">
+  <div class="summary-row" id="summary-row"></div>
+  <div class="filter-tabs">
+    <button class="tab active" onclick="filter('all',this)">Todos</button>
+    <button class="tab" onclick="filter('ok',this)">✅ Alto ≥90%</button>
+    <button class="tab" onclick="filter('warn',this)">⚠️ Medio 85-89%</button>
+    <button class="tab" onclick="filter('bad',this)">❌ Op. Mejora &lt;85%</button>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<!-- RANKING -->
+<div id="ranking" class="section">
+  <div class="rank-cards" id="rank-cards"></div>
+</div>
+
+<!-- ESTADÍSTICA -->
+<div id="stats" class="section">
+  <div class="kpi-row" id="kpi-row"></div>
+  <div class="stat-grid" id="stat-grid"></div>
+</div>
+
+<div class="footer">Toca cada inspector para ver el detalle · EMVARIAS Agosto 2026</div>
+
+<script>
+const raw = [
+  {name:"Jorge Puerta",     zona:"1",          lv:100.0, ryt:98.7,  cargue:98.5},
+  {name:"Santiago Valencia",zona:"2",          lv:97.1,  ryt:91.7,  cargue:92.1},
+  {name:"Diego Hoyos",      zona:"3",          lv:66.7,  ryt:59.5,  cargue:79.0},
+  {name:"Carlos Restrepo",  zona:"4",          lv:100.0, ryt:100.0, cargue:100.0},
+  {name:"Daniel Agudelo",   zona:"4",          lv:95.9,  ryt:86.8,  cargue:100.0},
+  {name:"Jader Bedoya",     zona:"5",          lv:94.4,  ryt:82.7,  cargue:99.3},
+  {name:"Cesar Rua",        zona:"6",          lv:100.0, ryt:100.0, cargue:87.8},
+  {name:"Manuel Restrepo",  zona:"7AM",        lv:95.5,  ryt:87.2,  cargue:95.1},
+  {name:"Sebastian Cano",   zona:"7PM",        lv:93.4,  ryt:93.5,  cargue:39.3},
+  {name:"Daniel Loaiza",    zona:"7NOC",       lv:97.9,  ryt:87.1,  cargue:29.1},
+  {name:"Daniel Parra",     zona:"Periferias", lv:84.1,  ryt:91.5,  cargue:96.1},
+];
+
+const data = raw.map(r => {
+  const avg = (r.lv + r.ryt) / 2;
+  const calc = avg * 0.6 + r.cargue * 0.4;
+  const cls = calc >= 90 ? 'ok' : calc >= 85 ? 'warn' : 'bad';
+  return {...r, avg, calc, cls};
+});
+const ranked = [...data].sort((a,b) => b.calc - a.calc);
+
+function calcStats(vals) {
+  const n=vals.length, mean=vals.reduce((a,b)=>a+b,0)/n;
+  const s=[...vals].sort((a,b)=>a-b);
+  const median = n%2===0 ? (s[n/2-1]+s[n/2])/2 : s[Math.floor(n/2)];
+  const stdev = Math.sqrt(vals.reduce((a,b)=>a+(b-mean)**2,0)/(n-1));
+  return {mean, median, stdev, min:s[0], max:s[n-1], range:s[n-1]-s[0]};
+}
+
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active'); btn.classList.add('active');
+}
+
+// ── Summary ──
+function renderSummary(){
+  const ok=data.filter(r=>r.cls==='ok').length;
+  const warn=data.filter(r=>r.cls==='warn').length;
+  const bad=data.filter(r=>r.cls==='bad').length;
+  document.getElementById('summary-row').innerHTML=`
+    <div class="s-card"><div class="num c-ok">${ok}</div><div class="lbl">✅ Alto ≥90%</div></div>
+    <div class="s-card"><div class="num c-warn">${warn}</div><div class="lbl">⚠️ Medio 85-89%</div></div>
+    <div class="s-card"><div class="num c-bad">${bad}</div><div class="lbl">❌ Op. de Mejora &lt;85%</div></div>`;
+}
+
+// ── Cards ──
+let currentFilter='all';
+function filter(type,btn){
+  currentFilter=type;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active')); btn.classList.add('active');
+  renderCards();
+}
+function renderCards(){
+  const filtered = currentFilter==='all' ? data : data.filter(r=>r.cls===currentFilter);
+  const icons={ok:'✅',warn:'⚠️',bad:'❌'}, labels={ok:'Alto',warn:'Medio',bad:'Op. Mejora'};
+  const scc={ok:'score-ok',warn:'score-warn',bad:'score-bad'};
+  document.getElementById('cards').innerHTML = filtered.map(r=>`
+    <div class="card ${r.cls}-card" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <span class="c-name">${icons[r.cls]} ${r.name}</span>
+        <span class="c-zona">Zona ${r.zona}</span>
+      </div>
+      <div class="pct-row">
+        <div class="pct-box"><div class="val">${r.lv.toFixed(1)}%</div><div class="key">% LV</div></div>
+        <div class="pct-box"><div class="val">${r.ryt.toFixed(1)}%</div><div class="key">% RyT</div></div>
+        <div class="pct-box"><div class="val">${r.cargue.toFixed(1)}%</div><div class="key">% Cargue</div></div>
+      </div>
+      <div class="result-row">
+        <div class="res-block"><div class="rv">${r.avg.toFixed(1)}%</div><div class="rk">Prom LV+RyT</div></div>
+        <div class="score-badge ${scc[r.cls]}">${r.calc.toFixed(1)}%</div>
+        <div class="res-block"><div class="rv">${labels[r.cls]}</div><div class="rk">Estado</div></div>
+      </div>
+      <div class="detail-panel">
+        <div class="drow"><span>Promedio LV + RyT</span><strong>${r.avg.toFixed(2)}%</strong></div>
+        <div class="drow"><span>60% × ${r.avg.toFixed(2)}%</span><strong>${(0.6*r.avg).toFixed(2)}%</strong></div>
+        <div class="drow"><span>40% × ${r.cargue.toFixed(1)}%</span><strong>${(0.4*r.cargue).toFixed(2)}%</strong></div>
+        <div class="drow"><span>Total calculado</span><strong>${r.calc.toFixed(2)}%</strong></div>
+        <div class="verdict verdict-${r.cls}">
+          ${r.cls==='ok'?'✅ Cumplimiento alto ≥90%':r.cls==='warn'?'⚠️ Cumplimiento medio 85–89%':'❌ Oportunidad de mejora <85%'} · ${r.calc.toFixed(1)}%
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── Ranking ──
+function renderRanking(){
+  const medals=['🥇','🥈','🥉'], mc=['#c49400','#7d8591','#9b5f23'];
+  const bc={ok:'#25d366',warn:'#ffa500',bad:'#e53935'};
+  const rb=['#fffad7','#f4f4fa','#fff2e1'];
+  document.getElementById('rank-cards').innerHTML = ranked.map((r,i)=>`
+    <div class="rank-card" style="background:${i<3?rb[i]:'#fff'};border-left:5px solid ${bc[r.cls]}">
+      <div style="min-width:40px;text-align:center;color:${i<3?mc[i]:'#aaa'}">
+        ${i<3
+          ? `<div style="font-size:1.2rem;line-height:1">${medals[i]}</div><div style="font-size:0.85rem;font-weight:800;margin-top:2px">${i+1}</div>`
+          : `<div style="font-size:1.1rem;font-weight:800">${i+1}</div>`}
+      </div>
+      <div class="rank-info">
+        <div class="rname">${r.name}</div>
+        <div class="rzona">Zona ${r.zona} · LV ${r.lv.toFixed(1)}% · RyT ${r.ryt.toFixed(1)}% · Cargue ${r.cargue.toFixed(1)}%</div>
+        <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${r.calc.toFixed(0)}%;background:${bc[r.cls]}"></div></div>
+      </div>
+      <div class="rank-score" style="color:${bc[r.cls]}">${r.calc.toFixed(1)}%</div>
+    </div>`).join('');
+}
+
+// ── Stats ──
+function renderStats(){
+  const st = calcStats(data.map(r=>r.calc));
+  const top = ranked[0];
+  const worst = ranked[ranked.length-1];
+  const aprobados = data.filter(r=>r.calc>=85).length;
+  const above = data.filter(r=>r.calc>=st.mean).length;
+
+  document.getElementById('kpi-row').innerHTML=`
+    <div class="kpi"><div class="kv">${st.mean.toFixed(1)}%</div><div class="kl">Media General</div><div class="ks">Agosto 2026</div></div>
+    <div class="kpi" style="border-top-color:#25d366"><div class="kv" style="color:#25d366">${top.calc.toFixed(1)}%</div><div class="kl">🏆 Mejor</div><div class="ks">${top.name}</div></div>
+    <div class="kpi" style="border-top-color:#e53935"><div class="kv" style="color:#e53935">${worst.calc.toFixed(1)}%</div><div class="kl">Op. de Mejora</div><div class="ks">${worst.name.split(' ')[0]}</div></div>
+    <div class="kpi" style="border-top-color:#1e64c8"><div class="kv" style="color:#1e64c8">${aprobados}/${data.length}</div><div class="kl">Aprobados ≥85%</div><div class="ks">${(aprobados/data.length*100).toFixed(0)}% del equipo</div></div>`;
+
+  const inds=[
+    {label:'% Calculado General', key:'calc',   color:'#075e54'},
+    {label:'% LV',                key:'lv',     color:'#1e64c8'},
+    {label:'% RyT',               key:'ryt',    color:'#a0500a'},
+    {label:'% Cargue',            key:'cargue', color:'#8c1e8c'},
+  ];
+  document.getElementById('stat-grid').innerHTML = inds.map(ind=>{
+    const s = calcStats(data.map(r=>r[ind.key]));
+    const sobre = data.filter(r=>r[ind.key]>=s.mean).length;
+    return `<div class="stat-card">
+      <div class="st-title" style="color:${ind.color}">${ind.label}</div>
+      ${[['Media',`${s.mean.toFixed(1)}%`],['Mediana',`${s.median.toFixed(1)}%`],
+         ['Desv. Est.',`${s.stdev.toFixed(1)}%`],['Mínimo',`${s.min.toFixed(1)}%`],
+         ['Máximo',`${s.max.toFixed(1)}%`],['Rango',`${s.range.toFixed(1)}%`],
+         ['Sobre media',`${sobre}/${data.length}`]]
+        .map(([k,v])=>`<div class="stat-row"><span class="sk">${k}</span>
+          <span class="sv" style="color:${k==='Media'?ind.color:'#333'}">${v}</span></div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+renderSummary(); renderCards(); renderRanking(); renderStats();
+</script>
+</body>
+</html>
